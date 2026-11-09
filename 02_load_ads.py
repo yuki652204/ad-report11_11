@@ -64,3 +64,12 @@ print(ads["media"].value_counts().to_string())
 print()
 print("■ 媒体ごとの広告費の合計")
 print(ads.groupby("media")["spend"].sum().to_string())
+
+
+
+
+# ⑤ 次の段階で使えるように、まとめた表を保存する
+Path("output").mkdir(exist_ok=True)
+ads.to_csv("output/ads_combined.csv", index=False, encoding="utf-8-sig")
+print()
+print("💾 output/ads_combined.csv に保存しました")
