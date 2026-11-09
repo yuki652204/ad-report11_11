@@ -1,0 +1,13 @@
+# 道具箱（requirements.txt から作り直せる）
+.venv/
+
+# Pythonの一時ファイル
+__pycache__/
+
+# 依頼主のデータ（本番では経営情報が入る）
+input/
+output/
+
+# 秘密の情報（合鍵）── 絶対に載せない
+.env
+credentials/

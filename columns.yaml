@@ -1,0 +1,42 @@
+# 広告CSVの読み込み設定
+# 媒体ごとに「列名の方言」を、共通の名前にそろえる
+
+meta:
+  file_pattern: "meta_ads_*.csv"
+  encoding: utf-8-sig
+  skip_rows: 0              # 先頭で飛ばす行の数（表紙なし）
+  columns:                  # 共通の名前: Metaでの列名
+    date: "レポート開始日"
+    campaign: "キャンペーン名"
+    spend: "消化金額 (JPY)"
+    conversions: "結果"
+    impressions: "インプレッション"
+    clicks: "リンクのクリック"
+
+google:
+  file_pattern: "google_ads_*.csv"
+  encoding: utf-8
+  skip_rows: 2              # 先頭の2行（タイトル・期間）を飛ばす
+  drop_rows_starting_with:  # 除く行（まとめの行）
+    - "合計"
+  columns:                  # 共通の名前: Googleでの列名
+    date: "日"
+    campaign: "キャンペーン"
+    spend: "費用"
+    conversions: "コンバージョン"
+    impressions: "表示回数"
+    clicks: "クリック数"
+
+
+    
+yahoo:
+  file_pattern: "yahoo_ads_*.csv"
+  encoding: utf-8
+  skip_rows: 0
+  columns:
+    date: "日付"
+    campaign: "キャンペーン名"
+    spend: "コスト"
+    conversions: "コンバージョン数"
+    impressions: "インプレッション数"
+    clicks: "クリック数"
