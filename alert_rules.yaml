@@ -1,0 +1,11 @@
+# 判定のルール（会社・広告アカウントごとに調整する）
+
+cpa_alert:
+  min_conversions: 1      # 成果がこの件数未満の日は、CPAの判定から外す
+  min_spend: 1000         # 広告費がこの金額未満の日も外す（少額の日の揺れ対策）
+  baseline_days: 7        # 「ふだんのCPA」を、判定する日の前の何日分で測るか
+  threshold_ratio: 2.0    # ふだんのCPA（中央値）の何倍を超えたら「急騰」か
+
+zero_conversion_alert:
+  min_spend: 2000         # この金額以上使ったのに成果0件の日を数える
+  consecutive_days: 3     # それが何日続いたら知らせるか
