@@ -1,0 +1,45 @@
+name: 広告レポート
+
+on:
+  workflow_dispatch:   # 手動の「Run workflow」ボタン（毎朝の時刻は、動いてから足す）
+
+permissions:
+  contents: read       # リポジトリを読むだけ（書き換えはできない）
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: ① リポジトリを取得
+        uses: actions/checkout@v6
+
+      - name: ② Pythonを用意
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      - name: ③ 道具を入れる
+        run: pip install -r requirements.txt
+
+      - name: ④ 金庫から鍵とIDを取り出して、ファイルを作る
+        env:
+          GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
+          SHEET_ID: ${{ secrets.SHEET_ID }}
+        run: |
+          mkdir -p credentials output
+          printf '%s' "$GCP_SA_KEY" > credentials/service_account.json
+          printf 'spreadsheet_id: "%s"\ncredentials: "credentials/service_account.json"\n' "$SHEET_ID" > sheet.yaml
+
+      - name: ⑤ 広告CSVをまとめる（架空のサンプルを読む）
+        env:
+          INPUT_DIR: sample_data
+        run: python 02_load_ads.py
+
+      - name: ⑥ CPAの急騰を判定する
+        run: python 04_alert.py
+
+      - name: ⑦ スプレッドシートに書き込む
+        run: python 05_to_sheet.py
