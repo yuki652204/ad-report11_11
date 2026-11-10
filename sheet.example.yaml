@@ -1,0 +1,3 @@
+# sheet.yaml の見本。これをコピーして sheet.yaml を作り、IDを書き換える
+spreadsheet_id: "1QOzd1YL7oeKESWbobBG4STjRMQi9mWsqkNcS5-EsoSA"
+credentials: "credentials/service_account.json"

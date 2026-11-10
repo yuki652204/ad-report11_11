@@ -11,3 +11,6 @@ output/
 # 秘密の情報（合鍵）── 絶対に載せない
 .env
 credentials/
+
+# どの依頼主のシートか（環境ごとの値）
+sheet.yaml
