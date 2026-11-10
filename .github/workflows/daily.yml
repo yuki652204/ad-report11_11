@@ -1,7 +1,9 @@
 name: 広告レポート
 
 on:
-  workflow_dispatch:   # 手動の「Run workflow」ボタン（毎朝の時刻は、動いてから足す）
+  workflow_dispatch:        # 手動の「Run workflow」ボタン（残しておく）
+  schedule:
+    - cron: "17 23 * * *"   # 毎朝 8:17（日本時間）＝ 前日 23:17（UTC）
 
 permissions:
   contents: read       # リポジトリを読むだけ（書き換えはできない）
