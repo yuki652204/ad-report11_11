@@ -3,7 +3,12 @@ from pathlib import Path
 import pandas as pd
 import yaml
 
-INPUT_DIR = Path("input")
+import os
+
+# 変更後
+INPUT_DIR = Path(os.environ.get("INPUT_DIR", "input"))  # 渡されなければ input を読む
+
+print(f"■ 読むフォルダ：{INPUT_DIR}")
 
 # ① 設定ファイルを読む（01と同じ）
 with Path("columns.yaml").open(encoding="utf-8") as f:
