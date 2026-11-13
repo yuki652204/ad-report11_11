@@ -45,3 +45,11 @@ jobs:
 
       - name: ⑦ スプレッドシートに書き込む
         run: python 05_to_sheet.py
+
+
+              - name: ⑧ 急騰があればメールで知らせる
+        env:
+          MAIL_USER: ${{ secrets.MAIL_USER }}
+          MAIL_APP_PASSWORD: ${{ secrets.MAIL_APP_PASSWORD }}
+          MAIL_TO: ${{ secrets.MAIL_TO }}
+        run: python 06_notify.py
