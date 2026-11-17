@@ -1,4 +1,6 @@
+from datetime import datetime
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 import pandas as pd
 import yaml
@@ -8,6 +10,7 @@ with Path("alert_rules.yaml").open(encoding="utf-8") as f:
     rules = yaml.safe_load(f)
 cpa_rule = rules["cpa_alert"]
 zero_rule = rules["zero_conversion_alert"]
+stale_rule = rules["stale_data_alert"]
 
 # ② 段階1の表を読み、行が無い日を0で埋める（03と同じ）
 ads = pd.read_csv("output/ads_combined.csv", encoding="utf-8-sig", parse_dates=["date"])
@@ -29,6 +32,24 @@ print()
 
 alerts = []  # 通知する内容をためるリスト
 
+
+def add_alert(kind, date, target, message):
+    """通知を1件ためる。key は「同じ通知を2回送らない」ための名札（06_notify.py が使う）"""
+    alerts.append({"key": f"{kind}|{date}|{target}", "alert": message})
+
+
+# ④-2 データが古くないか（いちばん新しい日が、今日から見て何日前か）
+today_jst = datetime.now(ZoneInfo("Asia/Tokyo")).date()
+lag_days = (today_jst - target_date.date()).days
+print(f"■ 今日（日本時間）：{today_jst} ／ 最新データ：{target_date.date()}（{lag_days}日前）")
+if lag_days > stale_rule["max_lag_days"]:
+    add_alert(
+        "データ未更新", target_date.date(), "-",
+        f"【データ未更新】最新のデータが {target_date:%m/%d}（{lag_days}日前）のままです。"
+        "広告CSVの取り込みを確認してください",
+    )
+print()
+
 # ⑤ キャンペーンごとに、CPAの急騰を判定する
 for (media, campaign), g in daily.groupby(["media", "campaign"]):
     today = g[g["date"] == target_date].iloc[0]
@@ -46,7 +67,10 @@ for (media, campaign), g in daily.groupby(["media", "campaign"]):
     mark = "🔔急騰" if ratio > cpa_rule["threshold_ratio"] else "OK"
     print(f"  {media}/{campaign}：CPA {today['cpa']:,.0f}円 ／ ふだん {baseline:,.0f}円 ＝ {ratio:.1f}倍 → {mark}")
     if mark != "OK":
-        alerts.append(f"【CPA急騰】{media}/{campaign}：{today['cpa']:,.0f}円（ふだんの{ratio:.1f}倍）")
+        add_alert(
+            "CPA急騰", target_date.date(), f"{media}/{campaign}",
+            f"【CPA急騰】{target_date:%m/%d} {media}/{campaign}：{today['cpa']:,.0f}円（ふだんの{ratio:.1f}倍）",
+        )
 
 # ⑥ 「お金を使ったのに成果0件」が続いていないか（CPAとは別の通知）
 print()
@@ -55,16 +79,19 @@ for (media, campaign), g in daily.groupby(["media", "campaign"]):
     last_n = g[g["date"] > target_date - pd.Timedelta(days=n)]
     is_zero = (last_n["spend"] >= zero_rule["min_spend"]) & (last_n["conversions"] == 0)
     if len(last_n) == n and is_zero.all():
-        alerts.append(f"【成果0件が{n}日連続】{media}/{campaign}：広告費 合計{last_n['spend'].sum():,.0f}円")
+        add_alert(
+            f"成果0件{n}日連続", target_date.date(), f"{media}/{campaign}",
+            f"【成果0件が{n}日連続】{target_date:%m/%d}まで {media}/{campaign}：広告費 合計{last_n['spend'].sum():,.0f}円",
+        )
 
 # ⑦ 結果
 print("■ 通知する内容")
 if alerts:
     for a in alerts:
-        print("  " + a)
+        print("  " + a["alert"])
 else:
     print("  なし")
 
 # ⑧ 次の段階のために保存
 daily.to_csv("output/daily_cpa.csv", index=False, encoding="utf-8-sig")
-pd.DataFrame({"alert": alerts}).to_csv("output/alerts.csv", index=False, encoding="utf-8-sig")
+pd.DataFrame(alerts, columns=["key", "alert"]).to_csv("output/alerts.csv", index=False, encoding="utf-8-sig")

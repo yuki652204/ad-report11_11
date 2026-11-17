@@ -9,3 +9,6 @@ cpa_alert:
 zero_conversion_alert:
   min_spend: 2000         # この金額以上使ったのに成果0件の日を数える
   consecutive_days: 3     # それが何日続いたら知らせるか
+
+stale_data_alert:
+  max_lag_days: 1         # 最新データが「今日」の何日前までなら正常か（朝の実行なら前日分まであればよい）
