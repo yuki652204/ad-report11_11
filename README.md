@@ -2,6 +2,8 @@
 
 Meta広告・Google広告のCSVを1つの表にまとめて、CPA（成果1件あたりの広告費）の急騰を判定し、Googleスプレッドシートに書き込む自動化です。GitHub Actionsで毎朝実行します。
 
+> **お客さまへ**：導入と実行の手順は [CLIENT_SETUP.md](CLIENT_SETUP.md) にまとめています。
+
 > `sample_data/` のデータは**架空**です。実在する広告アカウントの数字ではありません。
 
 ## 全体の流れ
@@ -25,8 +27,10 @@ output/daily_cpa.csv / output/alerts.csv
 
 ## 手元で動かす
 
+対応Python は **3.13 / 3.14** です。3.15 は、PyYAML 6.0.3 の配布物がないため `pip install` に失敗します（2026-11-23 確認）。
+
 ```powershell
-python -m venv .venv
+py -V:3.13 -m venv .venv   # Python の版を指定して作る
 .venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 copy sheet.example.yaml sheet.yaml   # スプレッドシートのIDを書く
@@ -37,6 +41,24 @@ python 05_to_sheet.py
 ```
 
 読み込むフォルダは環境変数 `INPUT_DIR` で切り替えられます（指定しなければ `input/`）。
+
+```powershell
+# サンプルデータで試すとき（PowerShell。画面を閉じると元に戻る）
+$env:INPUT_DIR = "sample_data"
+```
+
+```bash
+# Mac
+INPUT_DIR=sample_data python 02_load_ads.py
+```
+
+## 納品ZIPの作り方
+
+```powershell
+git archive --format=zip -o ad-report-delivery.zip HEAD
+```
+
+Git管理のファイルだけが入るので、`credentials/`・`sheet.yaml`・`input/`・`output/` は入らない。`.github/` も `.gitattributes` の `export-ignore` で除外している（お客さまは GitHub Actions を使わないため）。お客さま向けの手順は `CLIENT_SETUP.md`。
 
 ## GitHub Actions
 
